@@ -12,6 +12,7 @@ Catatan kerja untuk build **tuned** PES 2018 recomp (Android) dengan fokus:
 | Area | Status | Catatan |
 |---|---|---|
 | Tuned build 60 FPS | OK | Package terpisah `com.pes2018.recomp.rc2.fps60`, original tetap utuh |
+| FPS dalam pertandingan | OK | MSAA di-force OFF + scene scale 0.75; median 57 FPS (dulu 21). Lihat [docs/PERFORMANCE-FIX.md](docs/PERFORMANCE-FIX.md) |
 | Dialog patch lock | OK | `LS/H0;->u(Lf/j;)Z` dipaksa return false pada APK tuned; folder data game tidak disentuh |
 | OTG 1 stik | OK | Tombol aksi tidak lagi bocor ke launcher setelah `EVIOCGRAB` |
 | OTG 2 stik (P1/P2) | OK | Bridge membuat `PES Tuned Gamepad P1` dan `P2` terpisah; game melihat slot berbeda |
@@ -29,8 +30,10 @@ otg/
 tools/
   align_apk.py
   debug_key.py              # eksperimen logging key; jangan dipakai untuk build final (VerifyError)
+  run_ab.sh                 # A/B otomatis: macro -> MatchIdle -> statistik telemetri
 docs/
   FINDINGS.md
+  PERFORMANCE-FIX.md        # diagnosis + A/B + verifikasi perbaikan FPS
   OTG.md
 ```
 
