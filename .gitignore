@@ -1,0 +1,25 @@
+# Large/binary artifacts - build locally
+*.apk
+*.idsig
+*.keystore
+*.jks
+*.pem
+
+# Build workdirs
+*_out/
+*-unsigned.apk
+*-aligned.apk
+build/
+dist/
+
+# Logs/temp
+*.log
+*.csv
+*.txt
+!requirements.txt
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="gameDirectory">/sdcard/Download/PES 2018 PT-BR</string>
+    <boolean name="autoLaunch" value="true" />
+    <boolean name="developerTools" value="true" />
+</map>
