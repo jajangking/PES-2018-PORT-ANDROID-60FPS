@@ -24,7 +24,40 @@
 | Scene scale 100% | p95 kickoff ~40885 us, jank20 41 | Penyebab jank kickoff |
 | Scene scale 85%, hint pipeline, MSAA ON | p95 kickoff ~20428 us, jank20 34 | **Dipakai** |
 
-Stabil steady-state: ~59.2–59.9 FPS, GPU wait ~0.00 ms.
+Angka ~59 FPS itu **di menu**, bukan di dalam pertandingan. Telemetri pertandingan
+(CSV, kolom `in_match`) dengan profil lama (MSAA ON, scale 0.85) menunjukkan
+~21–29 FPS dan `gpu_wait_ms` ~850/detik — jadi beban ada di GPU, bukan di panas
+(thermal status 0, CPU/GPU ~70 °C) dan bukan di CPU recompiler.
+
+### A/B di TECNO LJ8k (Mali-G615 MC2), macro `intromatch`, 45 detik pertandingan
+
+| Konfigurasi (`env_override`) | FPS median | p50 frame | gpu wait |
+|---|---:|---:|---:|
+| baseline (MSAA ON, scale 0.85) | 21.5 | ~49 ms | ~850 ms/s |
+| `PES17_NO_MSAA=1` | 45.0 | ~20 ms | ~190 ms/s |
+| `PES17_NO_MSAA=1` + `PES17_SCENE_SCALE=0.75` | 37–54 | ~18 ms | ~200 ms/s |
+| `...` + `PES17_FORCE_LEGACY_RENDERING=` + `PES17_FORCE_BC_DECOMPRESS=` | 39.0 | ~21 ms | ~220 ms/s |
+
+Kesimpulan: **MSAA adalah akar masalahnya.** Legacy rendering dan software BC
+decompress yang di-force oleh patch justru lebih cepat, jadi dipertahankan.
+Run-to-run bisa beda ±15 FPS tergantung suhu/adegan; gunakan median, bukan satu run.
+
+Perbaikan final ditanam di `apk/patches/patch_rc2_60.py`: `PES17_NO_MSAA=1` dan
+`PES17_SCENE_SCALE=0.75` di-force sebelum `nativeSetOption`, jadi tidak perlu
+`env_override` lagi.
+
+### Verifikasi build final (tanpa env_override)
+
+APK: `rc2-tuned-60fps-fpsfix.apk` (dibangun ulang dari `rc2.apk` dengan patch
+terbaru, keystore `tuned`, terpasang di perangkat 2026-11-24 20:32).
+
+- `# resolved`: `msaa=0, scene_scale=0.75, fps_limit=60`
+- pertandingan: **median 57 FPS**, mean 49.8, p50 16.9 ms, gpu wait 224 ms/s
+- tidak ada satu pun detik dengan FPS < 15 saat intro/cutscene (sebelumnya 14 detik)
+
+Catatan A/B: jalankan `tools/run_ab.sh` di tmp dengan macro `intromatch` yang
+di-push ke `files/macros/`; `env_override` ditulis ke external files dan
+didahulukan oleh `perf::ApplyMemoryDefaults` setelah `applyOptions()`.
 
 ## Patch-lock dialog
 

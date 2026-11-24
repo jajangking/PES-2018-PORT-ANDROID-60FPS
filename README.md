@@ -58,10 +58,10 @@ Prereq: `apktool`, `python`, `zipalign`/script align, `apksigner`, `adb`, Java/A
 ## Profil tuned final
 
 - `fpsLimit=60`, `prefer60Hz=false`
-- `sceneScale=85` (100% menyebabkan jank kickoff)
-- `multisampling=true` (MSAA ON)
-- `crowd=false`
-- `frameGeneration=false`, `fsr=false` (stability profile)
+- `sceneScale=0.75` — **di-force di smali**, mengabaikan pref UI
+- `multisampling=false` → `PES17_NO_MSAA=1` — **di-force di smali**; MSAA ON adalah penyebab utama drop di match
+- `crowd=false`, `fsr=false`, `frameGeneration=false` (stability profile)
+- Native: `PES17_FORCE_LEGACY_RENDERING=1` dan `PES17_FORCE_BC_DECOMPRESS=1` **dipertahankan** (A/B: lebih cepat daripada dynamic rendering di Mali-G615)
 - Native: `PES17_NO_DISPLAY_TABLE=1` **ditolak**; jangan pakai.
 - Native: `PES17_FIRSTDRAW_SYNC=1` **ditolak**; jangan pakai.
 

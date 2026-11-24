@@ -53,7 +53,16 @@ s = open(smali_path, encoding="utf-8").read()
 forces = [
     ('    const-string v3, "PES17_NO_AUDIO"',
      ['    const-string v0, ""']),
-    # MSAA left at the app pref (multisampling=true) so thin lines look right.
+    # MSAA is the single most expensive GPU setting on mobile. The app pref had
+    # it on (multisampling=true); measured in a match on the LJ8k (Mali-G615):
+    #   MSAA on,  scale 0.85 -> 22 fps, gpu wait ~850 ms/s
+    #   MSAA off, scale 0.85 -> 45 fps, gpu wait ~190 ms/s
+    #   MSAA off, scale 0.75 -> 54 fps median
+    # Force the upstream mobile default instead of the player's pref.
+    ('    const-string v4, "PES17_NO_MSAA"',
+     ['    const-string v0, "1"']),
+    ('    const-string v11, "PES17_SCENE_SCALE"',
+     ['    const-string v4, "0.75"']),
     ('    const-string v0, "PES17_SHADER_PREWARM_ALL"',
      ['    const-string v1, "1"']),
     ('    const-string v11, "PES17_HEAT_SCALE"',
