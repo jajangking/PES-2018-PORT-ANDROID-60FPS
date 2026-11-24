@@ -86,31 +86,6 @@ for anchor, injected in forces:
     assert s.count(anchor) == 1, f"anchor not unique: {anchor} ({s.count(anchor)})"
     s = s.replace(anchor, "\n".join(injected) + "\n" + anchor, 1)
 
-# Bigger synchronous prewarm budget. The device tier default (40 pipelines /
-# 600 ms) leaves ~430 of the shader-cache seed for background compilation; on
-# the LJ8k those showed up as 200-480 ms stalls in the middle of a match.
-# Compile them at boot instead. Measured boot time did not grow with the cache
-# already warm, and the kick-off texture hitch is unaffected either way.
-prewarm_anchor = '''    const-string v1, "1"
-    const-string v0, "PES17_SHADER_PREWARM_ALL"
-
-    invoke-virtual {v3, v0, v1}, Lcom/pes2017/recomp/NativeBridge;->nativeSetOption(Ljava/lang/String;Ljava/lang/String;)V'''
-assert s.count(prewarm_anchor) == 1, "prewarm anchor not unique"
-prewarm_extra = '''
-    const-string v0, "PES17_PREWARM_MAX"
-
-    const-string v1, "500"
-
-    invoke-virtual {v3, v0, v1}, Lcom/pes2017/recomp/NativeBridge;->nativeSetOption(Ljava/lang/String;Ljava/lang/String;)V
-
-    const-string v0, "PES17_PREWARM_MS"
-
-    const-string v1, "30000"
-
-    invoke-virtual {v3, v0, v1}, Lcom/pes2017/recomp/NativeBridge;->nativeSetOption(Ljava/lang/String;Ljava/lang/String;)V'''
-s = s.replace(prewarm_anchor, prewarm_anchor + prewarm_extra, 1)
-print("prewarm budget raised to 500 pipelines / 30000 ms")
-
 # Extra: CPU BC decompression fallback for Mali (upstream rc2 has no UI for it).
 legacy_invoke = ('    invoke-virtual {v13, v4, v0}, '
                  'Lcom/pes2017/recomp/NativeBridge;->nativeSetOption'

@@ -109,37 +109,6 @@ Tanpa `env_override` sama sekali:
 - Pertandingan: **median 57 FPS**, mean 49.8, p50 16.9 ms, GPU wait 224 ms/s
 - Detik dengan FPS < 15 saat intro/cutscene: **0** (sebelumnya 14 detik)
 
-## Sisa frame drop (56 → 20 FPS)
-
-Masih ada, tapi penyebabnya berbeda dan sudah terukur dari `telemetry.csv`
-kolom `decode_ms / stage_ms / read_ms / pipe_n`:
-
-1. **Kickoff / aset baru masuk (paling sering).** Di detik ±101 (awal
-   pertandingan) dan kadang saat reveal baru, ~55–90 tekstur baru di-upload:
-   `decode_ms` 100–147 ms, `stage_ms` 40–50 ms, `read_ms` 30–40 ms. Total
-   ±190–230 ms kerja pada thread yang sama, sehingga FPS turun ke 12–23 selama
-   beberapa detik. Ini **bukan GPU** (`gpu_wait_ms` ≈ 0 saat drop) dan bukan
-   thermal. Tekstur sudah memakai `texture_store.bin` + BC→ASTC; mematikan ASTC
-   justru membuatnya lebih parah (store miss, FPS median 34). Tidak ada switch
-   runtime untuk mengupload tekstur ini secara async, jadi hitch ini melekat.
-2. **Kompilasi pipeline saat warmup (jarang).** Pernah tercatat `warmup:
-   precompiled pipeline ... in 479 ms / 204 ms` di tengah pertandingan. Default
-   tier cuma 40 pipeline / 600 ms saat boot, sisanya dikompilasi background.
-   Patch sekarang menaikkan budget ke **500 pipeline / 30000 ms**, jadi seed
-   shader-cache (~470 pipeline) selesai sebelum pertandingan. Boot tidak
-   terukur lebih lama dengan cache hangat.
-
-A/B yang sudah dicoba dan **ditolak**:
-
-| Percobaan | Hasil |
-|---|---|
-| `PES17_NO_BC_ASTC=1` | median 34 FPS, store miss, decode lebih lama — jangan dipakai |
-| `PES17_PREWARM_MAX=500 PES17_PREWARM_MS=30000` | dipakai; menghilangkan stall pipeline, tidak menyentuh hitch tekstur |
-
-Perhatian: menjalankan macro A/B menghasilkan variasi median 34–58 FPS antar
-run (suhu, adegan, dan waktu sampling relatif terhadap kickoff beda-beda).
-Bandingkan dengan median beberapa run, bukan satu angka.
-
 ## Batasan
 
 - Frame generation sengaja tetap mati (stability profile). Kalau menginginkan
